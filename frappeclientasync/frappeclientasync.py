@@ -69,9 +69,15 @@ class FrappeClientAsync(object):
 		return self.post_process(await self.session.get(self.url + "/api/resource/" + doctype, params=params,
 			verify_ssl=self.verify_ssl, headers=self.headers))
 
-	async def simult_bulk_get_list(self, doctype, fields='"*"', filters=None, limit_start=0, limit_page_length=0, order_by=None):
+	async def simult_bulk_get_list(self, doctype, fields='"*"', filters=None, limit_page_length=0, order_by=None):
 		'''Get simultanaeous bulks from doctype'''
+		resp = await self.get_count(doctype, filters)
+		num_docs = await resp
+		tasks = []
+		for i in range(0, num_docs, limit_page_length):
+			tasks.append(self.get_list(doctype, fields, filters, i, limit_page_length, order_by=order_by))
 
+		return await asyncio.gather(*tasks)
 
 	async def insert(self, doc):
 		'''Insert a document to the remote server

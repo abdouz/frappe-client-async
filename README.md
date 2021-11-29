@@ -35,6 +35,18 @@ client.authenticate("my_api_key", "my_api_secret")
 
 For demonstration purposes only! Never store any credentials in your source code. Instead, you could set them as environment variables and fetch them with `os.getenv()`.
 
+#### async get_count
+
+Get the number of documents that satisfy certain filters.
+
+Arguments:
+- `doctype`
+- `filters`: Dict of filters
+
+```py
+resp = await conn.get_count('Employee', filters={"attendance_device_id": ("!=", ""), "status": ("=", "Active")})
+```
+
 #### get_list
 
 Get a list of documents from the server
@@ -48,7 +60,7 @@ Arguments:
 - `order_by`: sort key and order (default is `modified desc`)
 
 ```py
-users = conn.get_list('User', fields = ['name', 'first_name', 'last_name'], , filters = {'user_type':'System User'})
+users = await conn.get_list('User', fields = ['name', 'first_name', 'last_name'], , filters = {'user_type':'System User'})
 ```
 
 Example of filters:
@@ -65,7 +77,7 @@ Arguments:
 - `doc`: Document object
 
 ```python
-doc = conn.insert({
+doc = await conn.insert({
 	"doctype": "Customer",
 	"customer_name": "Example Co",
 	"customer_type": "Company",
@@ -82,7 +94,7 @@ Arguments
 - `name`
 
 ```py
-doc = conn.get_doc('Customer', 'Example Co')
+doc = await conn.get_doc('Customer', 'Example Co')
 ```
 
 #### get_value
@@ -127,9 +139,11 @@ conn.delete('Customer', 'Example Co')
 ### Example
 
 ```python
-from frappeclient import FrappeClient
-
-conn = FrappeClient("example.com", "user@example.com", "password")
+from frappeclientasync import FrappeClientAsync
+api_key = ""
+api_secret = ""
+conn = FrappeClientAsync("example.com")
+conn.authenticate(api_key, api_secret)
 new_notes = [
 	{"doctype": "Note", "title": "Sing", "public": True},
 	{"doctype": "Note", "title": "a", "public": True},
@@ -138,11 +152,10 @@ new_notes = [
 	{"doctype": "Note", "title": "sixpence", "public": True}
 ]
 
-for note in new_notes:
-	print(conn.insert(note))
+resp = await conn.simult_bulk_insert(new_notes, 2) # 2 inserts per connection! this will do 3 simult. conns with each inserting 2 records
 
 # get note starting with s
-notes = conn.get_list('Note',
+notes = await conn.get_list('Note',
 	filters={'title': ('like', 's')},
 	fields=["title", "public"]
 )
