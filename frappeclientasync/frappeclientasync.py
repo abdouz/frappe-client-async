@@ -117,6 +117,14 @@ class FrappeClientAsync(object):
 		return self.post_process(self.session.put(url, json={"data": json.dumps(doc)}))
 		#return self.post_process(res)
 
+	async def bulk_update(self, docs):
+			'''Bulk update documents remotely
+			:param docs: List of dict or Document objects to be updated remotely (by `name`)'''
+			return await self.session.post(self.url, json={
+				'cmd': 'frappe.client.bulk_update',
+				'docs': json.dumps(docs)
+			})
+
 	# def post_request(self, data):
 	# 	res = self.session.post(self.url, json=data)
 	# 	res = self.post_process(res)
