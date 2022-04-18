@@ -114,16 +114,25 @@ class FrappeClientAsync(object):
 
 		:param doc: dict or Document object to be updated remotely. `name` is mandatory for this'''
 		url = self.url + "/api/resource/" + quote(doc.get("doctype")) + "/" + quote(doc.get("name"))
-		return self.post_process(self.session.put(url, json={"data": json.dumps(doc)}))
-		#return self.post_process(res)
+		return await self.post_process(await self.session.put(url, data={"data": json.dumps(doc)}))
 
 	async def bulk_update(self, docs):
-			'''Bulk update documents remotely
-			:param docs: List of dict or Document objects to be updated remotely (by `name`)'''
-			return await self.session.post(self.url, json={
-				'cmd': 'frappe.client.bulk_update',
-				'docs': json.dumps(docs)
-			})
+		'''Bulk update documents remotely
+		:param docs: List of dict or Document objects to be updated remotely (by `name`)'''
+		return await self.session.post(self.url, json={
+			'cmd': 'frappe.client.bulk_update',
+			'docs': json.dumps(docs)
+		})
+
+	async def delete(self, doctype, name):
+		'''Delete remote document by name
+		:param doctype: `doctype` to be deleted
+		:param name: `name` of document to be deleted'''
+		return await self.post_process(await self.session.post(self.url, data={
+			'cmd': 'frappe.client.delete',
+			'doctype': doctype,
+			'name': name
+		}))
 
 	# def post_request(self, data):
 	# 	res = self.session.post(self.url, json=data)
@@ -153,7 +162,3 @@ class FrappeClientAsync(object):
 			return rjson['data']
 		else:
 			return None
-
-	# def __del__(self):
-	# 	loop = asyncio.get_event_loop()
-	# 	loop.run_until_complete(self.session.close())
